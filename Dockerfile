@@ -2,7 +2,7 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# gcc נדרש ל-pymavlink שמכיל קוד C
+# gcc is required to compile pymavlink's C extensions
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc python3-dev \
     && rm -rf /var/lib/apt/lists/*
