@@ -1,8 +1,10 @@
 import logging
 import time
+
 import pandas as pd
-from .mavlink_reader import MavlinkGpsReader
+
 from .gps_processor import GpsDataProcessor
+from .mavlink_reader import MavlinkGpsReader
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +28,9 @@ def get_clean_gps_data(file_path: str) -> pd.DataFrame:
 
     logger.debug(
         "Timing — mavlink read: %.3fs | dataframe build: %.3fs | total: %.3fs",
-        t1 - t0, t2 - t1, t2 - t0,
+        t1 - t0,
+        t2 - t1,
+        t2 - t0,
     )
 
     if df.empty:
@@ -39,6 +43,7 @@ def get_clean_gps_data(file_path: str) -> pd.DataFrame:
 
 if __name__ == "__main__":
     import os
+
     logging.basicConfig(
         level=logging.DEBUG,
         format="%(asctime)s [%(levelname)-8s] %(name)s: %(message)s",

@@ -1,7 +1,8 @@
 import logging
 from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 from pymavlink import mavutil
-from typing import List, Dict, Optional, Any
 
 logger = logging.getLogger(__name__)
 
@@ -20,9 +21,7 @@ class MavlinkGpsReader:
     def _is_valid_gps(self, msg: Any) -> bool:
         if msg is None:
             return False
-        return bool(
-            getattr(msg, "I", None) == 1
-        )
+        return bool(getattr(msg, "I", None) == 1)
 
     def _message_to_dict(self, msg: Any) -> Dict[str, Any]:
         return {"lat": msg.Lat, "lon": msg.Lng}
@@ -31,6 +30,7 @@ class MavlinkGpsReader:
         if not self.connection:
             self.connect()
 
+        assert self.connection is not None
         raw_data: List[Dict[str, Any]] = []
         count = 0
         last_valid = None
@@ -50,6 +50,8 @@ class MavlinkGpsReader:
 
         logger.info(
             "Read %d valid GPS messages, kept %d (every_nth=%d)",
-            count, len(raw_data), every_nth,
+            count,
+            len(raw_data),
+            every_nth,
         )
         return raw_data

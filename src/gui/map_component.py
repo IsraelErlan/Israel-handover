@@ -1,10 +1,11 @@
-import flet as ft
-import flet_map as fmap
 import logging
+import os
+import sys
 import threading
 import time
-import sys
-import os
+
+import flet as ft
+import flet_map as fmap
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from business_logic.main import get_clean_gps_data
@@ -42,6 +43,7 @@ TILE_URL = "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
 # -----------------------------------------------------------------------------
 # Map layer builders
 # -----------------------------------------------------------------------------
+
 
 def build_map(marker_layer: fmap.MarkerLayer, polyline_layer: fmap.PolylineLayer) -> fmap.Map:
     return fmap.Map(
@@ -95,6 +97,7 @@ def build_track(coords: list[fmap.MapLatitudeLongitude]) -> fmap.PolylineMarker:
 # UI component builders
 # -----------------------------------------------------------------------------
 
+
 def build_toolbar(loading_ring: ft.ProgressRing, point_counter: ft.Text) -> ft.Container:
     return ft.Container(
         content=ft.Row(
@@ -131,6 +134,7 @@ def build_status_footer(status_text: ft.Text) -> ft.Container:
 # Data loading
 # -----------------------------------------------------------------------------
 
+
 def start_loading(
     page: ft.Page,
     gps_map: fmap.Map,
@@ -155,14 +159,14 @@ def start_loading(
                 return
 
             t1 = time.perf_counter()
-            coords = [
-                fmap.MapLatitudeLongitude(lat, lon)
-                for lat, lon in zip(df["Latitude"], df["Longitude"])
-            ]
+            coords = [fmap.MapLatitudeLongitude(lat, lon) for lat, lon in zip(df["Latitude"], df["Longitude"])]
             t2 = time.perf_counter()
             logger.debug(
                 "Timing — data load: %.3fs | build coords: %.3fs | total: %.3fs | points: %d",
-                t1 - t0, t2 - t1, t2 - t0, len(coords),
+                t1 - t0,
+                t2 - t1,
+                t2 - t0,
+                len(coords),
             )
 
             marker_layer.markers = build_markers(coords)
@@ -195,6 +199,7 @@ def start_loading(
 # Flet entry point
 # -----------------------------------------------------------------------------
 
+
 def main(page: ft.Page) -> None:
     page.title = "GPS Track Viewer"
     page.window.width = 1000
@@ -221,8 +226,7 @@ def main(page: ft.Page) -> None:
         )
     )
 
-    start_loading(page, gps_map, marker_layer, polyline_layer,
-                  status_text, point_counter, loading_ring)
+    start_loading(page, gps_map, marker_layer, polyline_layer, status_text, point_counter, loading_ring)
 
 
 if __name__ == "__main__":
