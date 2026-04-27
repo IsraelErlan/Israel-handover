@@ -1,12 +1,23 @@
 import flet as ft
 import flet_map as fmap
+import logging
 import threading
-import traceback
+import time
 import sys
 import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from business_logic.main import get_clean_gps_data
+
+logging.basicConfig(
+    level=logging.WARNING,
+    format="%(asctime)s [%(levelname)-8s] %(name)s: %(message)s",
+    datefmt="%H:%M:%S",
+)
+# Only show DEBUG+ for our own code; keep flet's internal loggers silent.
+for _name in ("__main__", "map_component", "business_logic"):
+    logging.getLogger(_name).setLevel(logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 # -----------------------------------------------------------------------------
 # Constants
@@ -133,16 +144,26 @@ def start_loading(
 
     def load() -> None:
         try:
+            logger.info("Background load started for: %s", DATA_FILE)
+            t0 = time.perf_counter()
+
             df = get_clean_gps_data(DATA_FILE)
 
             if df.empty:
+                logger.warning("No GPS points — aborting map update")
                 status_text.value = "No GPS points found in file."
                 return
 
+            t1 = time.perf_counter()
             coords = [
-                fmap.MapLatitudeLongitude(row["Latitude"], row["Longitude"])
-                for _, row in df.iterrows()
+                fmap.MapLatitudeLongitude(lat, lon)
+                for lat, lon in zip(df["Latitude"], df["Longitude"])
             ]
+            t2 = time.perf_counter()
+            logger.debug(
+                "Timing — data load: %.3fs | build coords: %.3fs | total: %.3fs | points: %d",
+                t1 - t0, t2 - t1, t2 - t0, len(coords),
+            )
 
             marker_layer.markers = build_markers(coords)
             polyline_layer.polylines = [build_track(coords)]
@@ -155,11 +176,13 @@ def start_loading(
 
             point_counter.value = f"{len(coords)} points"
             status_text.value = "Track loaded successfully ✓"
+            logger.info("Track rendered successfully (%d points)", len(coords))
 
         except FileNotFoundError:
+            logger.error("Log file not found: %s", DATA_FILE)
             status_text.value = f"Error: file not found — {DATA_FILE}"
         except Exception as ex:
-            traceback.print_exc()
+            logger.exception("Unexpected error during GPS load")
             status_text.value = f"Error: {ex}"
         finally:
             loading_ring.visible = False

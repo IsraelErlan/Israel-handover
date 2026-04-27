@@ -11,6 +11,5 @@ class GpsDataProcessor:
     def format_for_display(df: pd.DataFrame) -> pd.DataFrame:
         if df.empty:
             return df
-        display_df = df.copy()
-        display_df.columns = ["Latitude", "Longitude"]
-        return display_df
+        df.columns = ["Latitude", "Longitude"]
+        return df
