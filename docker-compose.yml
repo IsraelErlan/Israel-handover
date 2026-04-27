@@ -1,0 +1,9 @@
+services:
+  gps-viewer:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data:ro
+    environment:
+      DATA_FILE: /app/data/log_file_test_01.bin
