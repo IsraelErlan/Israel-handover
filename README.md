@@ -102,7 +102,7 @@ environment:
 
 ```
 .bin file
-   └─► MavlinkGpsReader       filters GPS messages (Instance=1, fix≥3D)
+   └─► MavlinkGpsReader       filters GPS messages (Instance=1), downsamples 1-in-10
          └─► GpsDataProcessor  converts to DataFrame, renames columns
                └─► get_clean_gps_data()   public API returning DataFrame
                      └─► map_component.py  builds Flet markers & polyline

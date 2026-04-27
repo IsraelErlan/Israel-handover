@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def get_clean_gps_data(file_path: str) -> pd.DataFrame:
     """Read a MAVLink .bin log and return a DataFrame with Latitude and Longitude.
 
-    Filters for GPS messages where Instance (I) == 1 and fix status >= 3.
+    Filters for GPS messages where Instance (I) == 1, downsampled 1-in-10.
     """
     logger.info("Loading GPS data from: %s", file_path)
 
