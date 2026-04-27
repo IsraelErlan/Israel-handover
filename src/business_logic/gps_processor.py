@@ -8,11 +8,6 @@ class GpsDataProcessor:
         return pd.DataFrame(data_list)
 
     @staticmethod
-    def normalize(df: pd.DataFrame) -> pd.DataFrame:
-        # pymavlink already returns decimal degrees — no integer scaling needed.
-        return df.copy() if not df.empty else df
-
-    @staticmethod
     def format_for_display(df: pd.DataFrame) -> pd.DataFrame:
         if df.empty:
             return df

@@ -13,7 +13,6 @@ def get_clean_gps_data(file_path: str) -> pd.DataFrame:
 
     processor = GpsDataProcessor()
     df = processor.to_dataframe(raw_points)
-    df = processor.normalize(df)
     df = processor.format_for_display(df)
 
     return df

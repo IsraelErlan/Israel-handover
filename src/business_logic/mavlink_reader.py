@@ -1,3 +1,4 @@
+from pathlib import Path
 from pymavlink import mavutil
 from typing import List, Dict, Optional, Any
 
@@ -8,6 +9,8 @@ class MavlinkGpsReader:
         self.connection: Optional[Any] = None
 
     def connect(self) -> None:
+        if not Path(self.file_path).exists():
+            raise FileNotFoundError(f"Log file not found: {self.file_path}")
         self.connection = mavutil.mavlink_connection(self.file_path)
 
     def _is_valid_gps(self, msg: Any) -> bool:

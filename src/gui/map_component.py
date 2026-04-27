@@ -1,6 +1,7 @@
 import flet as ft
 import flet_map as fmap
 import threading
+import traceback
 import sys
 import os
 
@@ -58,14 +59,16 @@ def build_markers(coords: list[fmap.MapLatitudeLongitude]) -> list[fmap.Marker]:
         )
         for c in coords
     ]
-    markers[0] = fmap.Marker(
-        coordinates=coords[0],
-        content=ft.Icon(ft.Icons.FLIGHT_TAKEOFF, color=ft.Colors.GREEN, size=22),
-    )
-    markers[-1] = fmap.Marker(
-        coordinates=coords[-1],
-        content=ft.Icon(ft.Icons.FLIGHT_LAND, color=ft.Colors.BLUE, size=22),
-    )
+    if len(coords) >= 1:
+        markers[0] = fmap.Marker(
+            coordinates=coords[0],
+            content=ft.Icon(ft.Icons.FLIGHT_TAKEOFF, color=ft.Colors.GREEN, size=22),
+        )
+    if len(coords) >= 2:
+        markers[-1] = fmap.Marker(
+            coordinates=coords[-1],
+            content=ft.Icon(ft.Icons.FLIGHT_LAND, color=ft.Colors.BLUE, size=22),
+        )
     return markers
 
 
@@ -156,6 +159,7 @@ def start_loading(
         except FileNotFoundError:
             status_text.value = f"Error: file not found — {DATA_FILE}"
         except Exception as ex:
+            traceback.print_exc()
             status_text.value = f"Error: {ex}"
         finally:
             loading_ring.visible = False
