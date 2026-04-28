@@ -42,15 +42,18 @@ def get_clean_gps_data(file_path: str) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    import os
+    import sys
 
     logging.basicConfig(
         level=logging.DEBUG,
         format="%(asctime)s [%(levelname)-8s] %(name)s: %(message)s",
         datefmt="%H:%M:%S",
     )
-    PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", "data", "log_file_test_01.bin"))
-    df = get_clean_gps_data(PATH)
+    if len(sys.argv) < 2:
+        print("Usage: python -m business_logic.main <path/to/log.bin>")
+        sys.exit(1)
+
+    df = get_clean_gps_data(sys.argv[1])
 
     if not df.empty:
         print(f"Success — {len(df)} points retrieved.")
