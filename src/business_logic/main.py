@@ -16,22 +16,28 @@ def get_clean_gps_data(file_path: str) -> pd.DataFrame:
     """
     logger.info("Loading GPS data from: %s", file_path)
 
-    t0 = time.perf_counter()
-    reader = MavlinkGpsReader(file_path)
-    raw_points = reader.get_raw_gps_data()
-    t1 = time.perf_counter()
+    try:
+        t0 = time.perf_counter()
+        reader = MavlinkGpsReader(file_path)
+        raw_points = reader.get_raw_gps_data()
+        t1 = time.perf_counter()
 
-    processor = GpsDataProcessor()
-    df = processor.to_dataframe(raw_points)
-    df = processor.format_for_display(df)
-    t2 = time.perf_counter()
+        processor = GpsDataProcessor()
+        df = processor.to_dataframe(raw_points)
+        df = processor.format_for_display(df)
+        t2 = time.perf_counter()
 
-    logger.debug(
-        "Timing — mavlink read: %.3fs | dataframe build: %.3fs | total: %.3fs",
-        t1 - t0,
-        t2 - t1,
-        t2 - t0,
-    )
+        logger.debug(
+            "Timing — mavlink read: %.3fs | dataframe build: %.3fs | total: %.3fs",
+            t1 - t0,
+            t2 - t1,
+            t2 - t0,
+        )
+    except (FileNotFoundError, RuntimeError, ValueError):
+        raise
+    except Exception as ex:
+        logger.exception("Unexpected error while loading GPS data from: %s", file_path)
+        raise RuntimeError(f"Failed to load GPS data: {file_path}") from ex
 
     if df.empty:
         logger.warning("No GPS points found in file: %s", file_path)
@@ -50,13 +56,15 @@ if __name__ == "__main__":
         datefmt="%H:%M:%S",
     )
     if len(sys.argv) < 2:
-        print("Usage: python -m business_logic.main <path/to/log.bin>")
+        logger.error("Usage: python -m business_logic.main <path/to/log.bin>")
         sys.exit(1)
 
-    df = get_clean_gps_data(sys.argv[1])
-
-    if not df.empty:
-        print(f"Success — {len(df)} points retrieved.")
-        print(df)
-    else:
-        print("No data found. Check the file path or GPS Instance (I) values.")
+    try:
+        df = get_clean_gps_data(sys.argv[1])
+        if not df.empty:
+            logger.info("Success — %d points retrieved", len(df))
+        else:
+            logger.warning("No data found. Check the file path or GPS Instance (I) values.")
+    except Exception:
+        logger.exception("Failed to load GPS data")
+        sys.exit(1)

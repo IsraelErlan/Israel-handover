@@ -16,37 +16,56 @@ class MavlinkGpsReader:
         if not Path(self.file_path).exists():
             raise FileNotFoundError(f"Log file not found: {self.file_path}")
         logger.debug("Opening MAVLink connection: %s", self.file_path)
-        self.connection = mavutil.mavlink_connection(self.file_path)
+        try:
+            self.connection = mavutil.mavlink_connection(self.file_path)
+        except Exception as ex:
+            logger.exception("Failed to open MAVLink connection: %s", self.file_path)
+            raise RuntimeError(f"Could not open MAVLink file: {self.file_path}") from ex
 
     def _is_valid_gps(self, msg: Any) -> bool:
         if msg is None:
             return False
         return bool(getattr(msg, "I", None) == 1)
 
-    def _message_to_dict(self, msg: Any) -> Dict[str, Any]:
-        return {"lat": msg.Lat, "lon": msg.Lng}
+    def _message_to_dict(self, msg: Any) -> Optional[Dict[str, Any]]:
+        try:
+            return {"lat": msg.Lat, "lon": msg.Lng}
+        except AttributeError:
+            logger.warning("GPS message missing Lat/Lng fields, skipping")
+            return None
 
     def get_raw_gps_data(self, every_nth: int = 10) -> List[Dict[str, Any]]:
         if not self.connection:
             self.connect()
 
-        assert self.connection is not None
+        if self.connection is None:
+            raise RuntimeError("MAVLink connection is not initialized")
+
         raw_data: List[Dict[str, Any]] = []
         count = 0
         last_valid = None
-        while True:
-            msg = self.connection.recv_match(type=["GPS"], blocking=False)
-            if msg is None:
-                break
-            if self._is_valid_gps(msg):
-                last_valid = msg
-                if count % every_nth == 0:
-                    raw_data.append(self._message_to_dict(msg))
-                count += 1
+
+        try:
+            while True:
+                msg = self.connection.recv_match(type=["GPS"], blocking=False)
+                if msg is None:
+                    break
+                if self._is_valid_gps(msg):
+                    last_valid = msg
+                    if count % every_nth == 0:
+                        point = self._message_to_dict(msg)
+                        if point is not None:
+                            raw_data.append(point)
+                    count += 1
+        except Exception as ex:
+            logger.exception("Error while reading GPS messages")
+            raise RuntimeError("Failed to read GPS data from file") from ex
 
         # Always include the last point so the track ends correctly.
         if last_valid is not None and (count - 1) % every_nth != 0:
-            raw_data.append(self._message_to_dict(last_valid))
+            point = self._message_to_dict(last_valid)
+            if point is not None:
+                raw_data.append(point)
 
         logger.info(
             "Read %d valid GPS messages, kept %d (every_nth=%d)",

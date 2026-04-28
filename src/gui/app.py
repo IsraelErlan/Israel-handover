@@ -53,6 +53,9 @@ class MapApp:
         self.page.add(build_file_picker_screen(self._on_pick_click))
 
     def show_map(self, file_path: str) -> None:
+        logger.info("Switching to map view for: %s", file_path)
+        self.status_text.value = "Loading GPS data..."
+        self.loading_ring.visible = True
         self.page.controls.clear()
         self.page.add(
             ft.Column(
@@ -68,13 +71,24 @@ class MapApp:
         self.loader.start(file_path)
 
     async def _on_pick_click(self, _: ft.ControlEvent) -> None:
-        files = await self.file_picker.pick_files(
-            file_type=ft.FilePickerFileType.CUSTOM,
-            allowed_extensions=["bin"],
-        )
-        if not files:
+        try:
+            files = await self.file_picker.pick_files(
+                file_type=ft.FilePickerFileType.CUSTOM,
+                allowed_extensions=["bin"],
+            )
+        except Exception:
+            logger.exception("File picker failed unexpectedly")
             return
+
+        if not files:
+            logger.debug("File picker cancelled by user")
+            return
+
         selected_path = files[0].path
+        if not selected_path:
+            logger.warning("File picker returned a file with no path")
+            return
+
         logger.info("File selected: %s", selected_path)
         self.show_map(selected_path)
 
