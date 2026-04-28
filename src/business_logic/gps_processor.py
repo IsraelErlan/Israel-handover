@@ -1,3 +1,4 @@
+"""GPS data processing utilities for converting raw MAVLink messages to DataFrames."""
 import logging
 from typing import Any, Dict, List
 
@@ -7,8 +8,11 @@ logger = logging.getLogger(__name__)
 
 
 class GpsDataProcessor:
+    """Converts raw GPS message dicts into a display-ready DataFrame."""
+
     @staticmethod
     def to_dataframe(data_list: List[Dict[str, Any]]) -> pd.DataFrame:
+        """Build a DataFrame from a list of GPS point dicts."""
         try:
             df = pd.DataFrame(data_list)
             logger.debug("Built DataFrame with %d rows", len(df))
@@ -19,6 +23,7 @@ class GpsDataProcessor:
 
     @staticmethod
     def format_for_display(df: pd.DataFrame) -> pd.DataFrame:
+        """Rename columns to Latitude/Longitude for display."""
         if df.empty:
             return df
         try:

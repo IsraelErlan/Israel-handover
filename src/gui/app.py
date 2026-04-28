@@ -1,3 +1,4 @@
+"""Flet application entry point for the GPS Track Viewer."""
 import logging
 import os
 import sys
@@ -23,6 +24,8 @@ logger = logging.getLogger(__name__)
 
 
 class MapApp:
+    """Top-level Flet application that owns page state and drives navigation."""
+
     def __init__(self, page: ft.Page) -> None:
         self.page = page
         page.title = "GPS Track Viewer"
@@ -50,9 +53,11 @@ class MapApp:
         )
 
     def show_file_picker(self) -> None:
+        """Render the file-picker landing screen."""
         self.page.add(build_file_picker_screen(self._on_pick_click))
 
     def show_map(self, file_path: str) -> None:
+        """Switch to the map view and kick off background GPS loading."""
         logger.info("Switching to map view for: %s", file_path)
         self.status_text.value = "Loading GPS data..."
         self.loading_ring.visible = True
@@ -94,6 +99,7 @@ class MapApp:
 
 
 def main(page: ft.Page) -> None:
+    """Flet entry point — called once per connected client."""
     app = MapApp(page)
     app.show_file_picker()
 

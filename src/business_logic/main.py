@@ -1,3 +1,4 @@
+"""Public API for GPS data extraction from MAVLink binary logs."""
 import logging
 import time
 

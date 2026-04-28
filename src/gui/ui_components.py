@@ -1,9 +1,11 @@
+"""Reusable Flet UI component builders for the GPS Track Viewer."""
 from typing import Callable
 
 import flet as ft
 
 
 def build_toolbar(loading_ring: ft.ProgressRing, point_counter: ft.Text) -> ft.Container:
+    """Return the top toolbar with legend icons and loading/point-count status."""
     return ft.Container(
         content=ft.Row(
             controls=[
@@ -28,6 +30,7 @@ def build_toolbar(loading_ring: ft.ProgressRing, point_counter: ft.Text) -> ft.C
 
 
 def build_status_footer(status_text: ft.Text) -> ft.Container:
+    """Return the bottom status bar container."""
     return ft.Container(
         content=status_text,
         padding=ft.Padding.symmetric(horizontal=16, vertical=6),
@@ -36,12 +39,23 @@ def build_status_footer(status_text: ft.Text) -> ft.Container:
 
 
 def build_file_picker_screen(on_pick_click: Callable) -> ft.Container:
+    """Return the full-screen file-picker landing view."""
     return ft.Container(
         content=ft.Column(
             controls=[
                 ft.Icon(ft.Icons.FLIGHT, size=64, color=ft.Colors.BLUE_GREY_400),
-                ft.Text("GPS Track Viewer", size=28, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER),
-                ft.Text("בחר קובץ MAVLink להצגת המסלול", size=14, color=ft.Colors.BLUE_GREY_600, text_align=ft.TextAlign.CENTER),
+                ft.Text(
+                    "GPS Track Viewer",
+                    size=28,
+                    weight=ft.FontWeight.BOLD,
+                    text_align=ft.TextAlign.CENTER,
+                ),
+                ft.Text(
+                    "בחר קובץ MAVLink להצגת המסלול",
+                    size=14,
+                    color=ft.Colors.BLUE_GREY_600,
+                    text_align=ft.TextAlign.CENTER,
+                ),
                 ft.Button(
                     "בחר קובץ .bin",
                     icon=ft.Icons.FOLDER_OPEN,

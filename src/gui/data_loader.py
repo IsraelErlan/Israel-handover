@@ -1,3 +1,4 @@
+"""Background GPS data loading and map update logic."""
 import logging
 import os
 import sys
@@ -9,14 +10,17 @@ import flet_map as fmap
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from business_logic.main import get_clean_gps_data
 from constants import TRACK_ZOOM
 from map_layers import build_markers, build_track
+
+from business_logic.main import get_clean_gps_data
 
 logger = logging.getLogger(__name__)
 
 
 class GpsDataLoader:
+    """Loads GPS data from a MAVLink file in a background thread and updates the map."""
+
     def __init__(
         self,
         page: ft.Page,
@@ -36,6 +40,7 @@ class GpsDataLoader:
         self.loading_ring = loading_ring
 
     def start(self, file_path: str) -> None:
+        """Spawn a daemon thread to load GPS data and update the map."""
         threading.Thread(target=self._load, args=(file_path,), daemon=True).start()
 
     def _load(self, file_path: str) -> None:
@@ -51,7 +56,10 @@ class GpsDataLoader:
                 return
 
             t1 = time.perf_counter()
-            coords = [fmap.MapLatitudeLongitude(lat, lon) for lat, lon in zip(df["Latitude"], df["Longitude"])]
+            coords = [
+                fmap.MapLatitudeLongitude(lat, lon)
+                for lat, lon in zip(df["Latitude"], df["Longitude"])
+            ]
             t2 = time.perf_counter()
             logger.debug(
                 "Timing — data load: %.3fs | build coords: %.3fs | total: %.3fs | points: %d",

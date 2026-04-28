@@ -1,10 +1,11 @@
+"""Factory functions for flet_map layers used in the GPS Track Viewer."""
 import flet as ft
 import flet_map as fmap
-
 from constants import INITIAL_CENTER, INITIAL_ZOOM, TILE_URL
 
 
 def build_map(marker_layer: fmap.MarkerLayer, polyline_layer: fmap.PolylineLayer) -> fmap.Map:
+    """Return a configured Map with tile, polyline, and marker layers."""
     return fmap.Map(
         expand=True,
         initial_center=INITIAL_CENTER,
@@ -14,7 +15,6 @@ def build_map(marker_layer: fmap.MarkerLayer, polyline_layer: fmap.PolylineLayer
         layers=[
             fmap.TileLayer(
                 url_template=TILE_URL,
-
             ),
             polyline_layer,
             marker_layer,
@@ -23,6 +23,7 @@ def build_map(marker_layer: fmap.MarkerLayer, polyline_layer: fmap.PolylineLayer
 
 
 def build_markers(coords: list[fmap.MapLatitudeLongitude]) -> list[fmap.Marker]:
+    """Return Markers for every GPS point with takeoff/landing icons at the ends."""
     markers = [
         fmap.Marker(
             coordinates=c,
@@ -44,6 +45,7 @@ def build_markers(coords: list[fmap.MapLatitudeLongitude]) -> list[fmap.Marker]:
 
 
 def build_track(coords: list[fmap.MapLatitudeLongitude]) -> fmap.PolylineMarker:
+    """Return a PolylineMarker connecting all GPS points."""
     return fmap.PolylineMarker(
         coordinates=coords,
         color=ft.Colors.ORANGE_600,
