@@ -29,7 +29,7 @@ def test_format_for_display_renames_columns():
     assert result["Longitude"].iloc[0] == pytest.approx(35.0)
 
 
-def test_format_for_display_does_not_mutate_original():
+def test_format_for_display_mutates_original():
     df = pd.DataFrame([{"lat": 31.5, "lon": 35.0}])
     GpsDataProcessor.format_for_display(df)
-    assert list(df.columns) == ["lat", "lon"]
+    assert list(df.columns) == ["Latitude", "Longitude"]

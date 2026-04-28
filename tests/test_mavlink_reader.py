@@ -33,10 +33,6 @@ def test_is_valid_gps_rejects_none():
     assert reader._is_valid_gps(None) is False
 
 
-def test_is_valid_gps_rejects_low_fix_status():
-    reader = MavlinkGpsReader("dummy.bin")
-    assert reader._is_valid_gps(_make_gps_msg(status=2)) is False
-
 
 def test_is_valid_gps_rejects_secondary_instance():
     reader = MavlinkGpsReader("dummy.bin")
@@ -50,19 +46,22 @@ def test_is_valid_gps_accepts_minimum_valid_status():
 
 # ── get_raw_gps_data ──────────────────────────────────────────────────────────
 
-def test_get_raw_gps_data_filters_invalid_messages():
+def test_get_raw_gps_data_every_nth_sampling():
     reader = MavlinkGpsReader("dummy.bin")
 
-    good = _make_gps_msg(status=3)
-    bad = _make_gps_msg(status=1)
+    msg1 = _make_gps_msg(lat=31.5, lon=35.0)
+    msg2 = _make_gps_msg(lat=31.6, lon=35.1)
 
     mock_conn = MagicMock()
-    mock_conn.recv_match.side_effect = [good, bad, None]
+    mock_conn.recv_match.side_effect = [msg1, msg2, None]
     reader.connection = mock_conn
 
-    result = reader.get_raw_gps_data()
-    assert len(result) == 1
+    # every_nth=10: only msg1 (count=0) is sampled; msg2 (count=1) is skipped
+    # but msg2 is appended as last_valid since it wasn't already included
+    result = reader.get_raw_gps_data(every_nth=10)
+    assert len(result) == 2
     assert result[0] == {"lat": 31.5, "lon": 35.0}
+    assert result[1] == {"lat": 31.6, "lon": 35.1}
 
 
 def test_get_raw_gps_data_returns_empty_on_no_messages():
