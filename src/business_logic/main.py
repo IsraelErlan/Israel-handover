@@ -45,26 +45,3 @@ def get_clean_gps_data(file_path: str) -> pd.DataFrame:
         logger.info("GPS data ready: %d points", len(df))
 
     return df
-
-
-if __name__ == "__main__":
-    import sys
-
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(asctime)s [%(levelname)-8s] %(name)s: %(message)s",
-        datefmt="%H:%M:%S",
-    )
-    if len(sys.argv) < 2:
-        logger.error("Usage: python -m business_logic.main <path/to/log.bin>")
-        sys.exit(1)
-
-    try:
-        df = get_clean_gps_data(sys.argv[1])
-        if not df.empty:
-            logger.info("Success — %d points retrieved", len(df))
-        else:
-            logger.warning("No data found. Check the file path or GPS Instance (I) values.")
-    except Exception:
-        logger.exception("Failed to load GPS data")
-        sys.exit(1)
