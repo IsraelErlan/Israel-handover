@@ -27,7 +27,12 @@ israel_handover/
 │   │   ├── mavlink_reader.py     # Reads and filters GPS messages from .bin
 │   │   └── gps_processor.py     # Converts raw data to a clean DataFrame
 │   └── gui/
-│       └── map_component.py     # Flet UI — map, markers, toolbar
+│       ├── app.py                # MapApp class + main() entry point
+│       ├── constants.py          # Shared constants (zoom, tile URL, etc.)
+│       ├── data_loader.py        # GpsDataLoader class (background thread)
+│       ├── map_layers.py         # Map, marker and polyline builders
+│       └── ui_components.py     # Toolbar, footer and file picker screen
+├── tests/
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
@@ -54,21 +59,10 @@ pip install -r requirements.txt
 **2. Run the app**
 
 ```bash
-python src/gui/map_component.py
+python src/gui/app.py
 ```
 
-A native desktop window opens with the map.
-The data file path defaults to the hardcoded path in `map_component.py`.
-To use a different file, set the `DATA_FILE` environment variable:
-
-```bash
-# Windows
-set DATA_FILE=C:\path\to\your\log.bin
-python src/gui/map_component.py
-
-# macOS / Linux
-DATA_FILE=/path/to/your/log.bin python src/gui/map_component.py
-```
+A native desktop window opens with a file picker. Select a `.bin` MAVLink log file to display the flight track.
 
 ---
 
@@ -101,11 +95,12 @@ environment:
 ### Data flow
 
 ```
-.bin file
-   └─► MavlinkGpsReader       filters GPS messages (Instance=1), downsamples 1-in-10
-         └─► GpsDataProcessor  converts to DataFrame, renames columns
-               └─► get_clean_gps_data()   public API returning DataFrame
-                     └─► map_component.py  builds Flet markers & polyline
+.bin file (selected via file picker)
+   └─► MavlinkGpsReader        filters GPS messages (Instance=1), downsamples 1-in-10
+         └─► GpsDataProcessor   converts to DataFrame, renames columns
+               └─► get_clean_gps_data()    public API returning DataFrame
+                     └─► GpsDataLoader     loads on background thread, updates map
+                               └─► MapApp  manages page state and navigation
 ```
 
 ### Why background thread for data loading?
@@ -124,10 +119,10 @@ command to the live Flutter map control.
 
 ## Environment Variables
 
-| Variable   | Default                                   | Description                        |
-|------------|-------------------------------------------|------------------------------------|
-| `DATA_FILE`| Windows path in `map_component.py`        | Path to the MAVLink `.bin` log     |
-| `FLET_ENV` | _(unset)_                                 | Set to `docker` to enable web mode |
+| Variable   | Default                        | Description                        |
+|------------|--------------------------------|------------------------------------|
+| `DATA_FILE`| `data/log_file_test_01.bin`    | Path to the MAVLink `.bin` log (Docker only) |
+| `FLET_ENV` | _(unset)_                      | Set to `docker` to enable web mode |
 
 ---
 
