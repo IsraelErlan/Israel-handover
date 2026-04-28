@@ -56,7 +56,7 @@ class MapScreen:
         """Start background GPS data loading for the given file."""
         self.status_text.value = "Loading GPS data..."
         self.loading_ring.visible = True
-        threading.Thread(target=self._load, args=(file_path,), daemon=True).start()
+        threading.Thread(target=self._load_in_background, args=(file_path,), daemon=True).start()
 
     def _build_toolbar(self) -> ft.Container:
         return ft.Container(
@@ -94,7 +94,7 @@ class MapScreen:
             bgcolor=ft.Colors.SURFACE_CONTAINER,
         )
 
-    def _load(self, file_path: str) -> None:
+    def _load_in_background(self, file_path: str) -> None:
         try:
             logger.info("Background load started for: %s", file_path)
             start_time = time.perf_counter()
