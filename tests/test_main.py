@@ -12,8 +12,8 @@ def test_returns_empty_dataframe_when_no_gps_points(tmp_path):
     fake_bin = tmp_path / "empty.bin"
     fake_bin.write_bytes(b"")
 
-    with patch("src.business_logic.mavlink_reader.MavlinkGpsReader.connect"), \
-         patch("src.business_logic.mavlink_reader.MavlinkGpsReader.get_raw_gps_data", return_value=[]):
+    with patch("src.business_logic.mavlink_reader.MavlinkReader.connect"), \
+         patch("src.business_logic.mavlink_reader.MavlinkReader.get_raw_gps_data", return_value=[]):
         result = get_clean_gps_data(str(fake_bin))
 
     assert result.empty
@@ -28,8 +28,8 @@ def test_returns_correct_columns_and_values(tmp_path):
         {"lat": 31.6, "lon": 35.1},
     ]
 
-    with patch("src.business_logic.mavlink_reader.MavlinkGpsReader.connect"), \
-         patch("src.business_logic.mavlink_reader.MavlinkGpsReader.get_raw_gps_data", return_value=fake_points):
+    with patch("src.business_logic.mavlink_reader.MavlinkReader.connect"), \
+         patch("src.business_logic.mavlink_reader.MavlinkReader.get_raw_gps_data", return_value=fake_points):
         result = get_clean_gps_data(str(fake_bin))
 
     assert list(result.columns) == ["Latitude", "Longitude"]

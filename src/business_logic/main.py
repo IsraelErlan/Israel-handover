@@ -1,13 +1,13 @@
 """Public API for GPS data extraction from MAVLink binary logs."""
-import logging
 import time
 
 import pandas as pd
 
-from .gps_processor import GpsDataProcessor
-from .mavlink_reader import MavlinkGpsReader
+from .gps_processor import GpsProcessor
+from .mavlink_reader import MavlinkReader
+from utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def get_clean_gps_data(file_path: str) -> pd.DataFrame:
@@ -17,28 +17,22 @@ def get_clean_gps_data(file_path: str) -> pd.DataFrame:
     """
     logger.info("Loading GPS data from: %s", file_path)
 
-    try:
-        t0 = time.perf_counter()
-        reader = MavlinkGpsReader(file_path)
-        raw_points = reader.get_raw_gps_data()
-        t1 = time.perf_counter()
+    start_time = time.perf_counter()
+    reader = MavlinkReader(file_path)
+    raw_points = reader.get_raw_gps_data()
+    after_read_time = time.perf_counter()
 
-        processor = GpsDataProcessor()
-        df = processor.to_dataframe(raw_points)
-        df = processor.format_for_display(df)
-        t2 = time.perf_counter()
+    processor = GpsProcessor()
+    df = processor.to_dataframe(raw_points)
+    df = processor.format_for_display(df)
+    after_process_time = time.perf_counter()
 
-        logger.debug(
-            "Timing — mavlink read: %.3fs | dataframe build: %.3fs | total: %.3fs",
-            t1 - t0,
-            t2 - t1,
-            t2 - t0,
-        )
-    except (FileNotFoundError, RuntimeError, ValueError):
-        raise
-    except Exception as ex:
-        logger.exception("Unexpected error while loading GPS data from: %s", file_path)
-        raise RuntimeError(f"Failed to load GPS data: {file_path}") from ex
+    logger.debug(
+        "Timing — mavlink read: %.3fs | dataframe build: %.3fs | total: %.3fs",
+        after_read_time - start_time,
+        after_process_time - after_read_time,
+        after_process_time - start_time,
+    )
 
     if df.empty:
         logger.warning("No GPS points found in file: %s", file_path)

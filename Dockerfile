@@ -28,4 +28,4 @@ EXPOSE 8080
 ENV DATA_FILE=/app/data/log_file_test_01.bin
 ENV FLET_ENV=docker
 
-CMD ["python", "src/gui/app.py"]
+CMD ["python", "src/gui/map_app.py"]

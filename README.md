@@ -26,10 +26,12 @@ israel_handover/
 │   │   ├── main.py               # Public entry point: get_clean_gps_data()
 │   │   ├── mavlink_reader.py     # Reads and filters GPS messages from .bin
 │   │   └── gps_processor.py     # Converts raw data to a clean DataFrame
+│   ├── utils/
+│   │   ├── constants.py          # Shared constants (zoom, tile URL, etc.)
+│   │   └── logger.py             # Shared logger factory
 │   └── gui/
-│       ├── app.py                # MapApp class + main() entry point
-│       ├── constants.py          # Shared constants (zoom, tile URL, etc.)
-│       ├── data_loader.py        # GpsDataLoader class (background thread)
+│       ├── map_app.py            # MapApp class + main() entry point
+│       ├── gps_data_loader.py    # GpsDataLoader class (background thread)
 │       ├── map_layers.py         # Map, marker and polyline builders
 │       └── ui_components.py     # Toolbar, footer and file picker screen
 ├── tests/
@@ -59,7 +61,7 @@ pip install -r requirements.txt
 **2. Run the app**
 
 ```bash
-python src/gui/app.py
+python src/gui/map_app.py
 ```
 
 A native desktop window opens with a file picker. Select a `.bin` MAVLink log file to display the flight track.
@@ -96,8 +98,8 @@ environment:
 
 ```
 .bin file (selected via file picker)
-   └─► MavlinkGpsReader        filters GPS messages (Instance=1), downsamples 1-in-10
-         └─► GpsDataProcessor   converts to DataFrame, renames columns
+   └─► MavlinkReader            filters GPS messages (Instance=1), downsamples 1-in-10
+         └─► GpsProcessor       converts to DataFrame, renames columns
                └─► get_clean_gps_data()    public API returning DataFrame
                      └─► GpsDataLoader     loads on background thread, updates map
                                └─► MapApp  manages page state and navigation

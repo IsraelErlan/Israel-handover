@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock
-from src.business_logic.mavlink_reader import MavlinkGpsReader
+from src.business_logic.mavlink_reader import MavlinkReader
 
 
 def _make_gps_msg(status: int = 3, instance: int = 1, lat: float = 31.5, lon: float = 35.0) -> MagicMock:
@@ -16,7 +16,7 @@ def _make_gps_msg(status: int = 3, instance: int = 1, lat: float = 31.5, lon: fl
 # ── connect ───────────────────────────────────────────────────────────────────
 
 def test_connect_raises_for_missing_file():
-    reader = MavlinkGpsReader("/nonexistent/path/file.bin")
+    reader = MavlinkReader("/nonexistent/path/file.bin")
     with pytest.raises(FileNotFoundError, match="Log file not found"):
         reader.connect()
 
@@ -24,30 +24,30 @@ def test_connect_raises_for_missing_file():
 # ── _is_valid_gps ─────────────────────────────────────────────────────────────
 
 def test_is_valid_gps_accepts_good_message():
-    reader = MavlinkGpsReader("dummy.bin")
+    reader = MavlinkReader("dummy.bin")
     assert reader._is_valid_gps(_make_gps_msg()) is True
 
 
 def test_is_valid_gps_rejects_none():
-    reader = MavlinkGpsReader("dummy.bin")
+    reader = MavlinkReader("dummy.bin")
     assert reader._is_valid_gps(None) is False
 
 
 
 def test_is_valid_gps_rejects_secondary_instance():
-    reader = MavlinkGpsReader("dummy.bin")
+    reader = MavlinkReader("dummy.bin")
     assert reader._is_valid_gps(_make_gps_msg(instance=2)) is False
 
 
 def test_is_valid_gps_accepts_minimum_valid_status():
-    reader = MavlinkGpsReader("dummy.bin")
+    reader = MavlinkReader("dummy.bin")
     assert reader._is_valid_gps(_make_gps_msg(status=3)) is True
 
 
 # ── get_raw_gps_data ──────────────────────────────────────────────────────────
 
 def test_get_raw_gps_data_every_nth_sampling():
-    reader = MavlinkGpsReader("dummy.bin")
+    reader = MavlinkReader("dummy.bin")
 
     msg1 = _make_gps_msg(lat=31.5, lon=35.0)
     msg2 = _make_gps_msg(lat=31.6, lon=35.1)
@@ -65,7 +65,7 @@ def test_get_raw_gps_data_every_nth_sampling():
 
 
 def test_get_raw_gps_data_returns_empty_on_no_messages():
-    reader = MavlinkGpsReader("dummy.bin")
+    reader = MavlinkReader("dummy.bin")
 
     mock_conn = MagicMock()
     mock_conn.recv_match.return_value = None
