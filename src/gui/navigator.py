@@ -1,8 +1,9 @@
 """Screen navigator — controls transitions between app screens."""
-import flet as ft
 
+import flet as ft
 from file_picker_screen import FilePickerScreen
 from map_screen import MapScreen
+
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -17,6 +18,7 @@ class Navigator:
         self.map_screen = MapScreen(page, on_back=self.go_to_file_picker)
 
     def go_to_file_picker(self) -> None:
+        """Show the file picker landing screen."""
         self.page.controls.clear()
         self.page.add(self.file_picker_screen.build())
 

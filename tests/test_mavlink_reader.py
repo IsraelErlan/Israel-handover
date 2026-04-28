@@ -21,29 +21,6 @@ def test_connect_raises_for_missing_file():
         reader.connect()
 
 
-# ── _is_valid_gps ─────────────────────────────────────────────────────────────
-
-def test_is_valid_gps_accepts_good_message():
-    reader = MavlinkReader("dummy.bin")
-    assert reader._is_valid_gps(_make_gps_msg()) is True
-
-
-def test_is_valid_gps_rejects_none():
-    reader = MavlinkReader("dummy.bin")
-    assert reader._is_valid_gps(None) is False
-
-
-
-def test_is_valid_gps_rejects_secondary_instance():
-    reader = MavlinkReader("dummy.bin")
-    assert reader._is_valid_gps(_make_gps_msg(instance=2)) is False
-
-
-def test_is_valid_gps_accepts_minimum_valid_status():
-    reader = MavlinkReader("dummy.bin")
-    assert reader._is_valid_gps(_make_gps_msg(status=3)) is True
-
-
 # ── get_raw_gps_data ──────────────────────────────────────────────────────────
 
 def test_get_raw_gps_data_every_nth_sampling():

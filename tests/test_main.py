@@ -32,7 +32,7 @@ def test_returns_correct_columns_and_values(tmp_path):
          patch("src.business_logic.mavlink_reader.MavlinkReader.get_raw_gps_data", return_value=fake_points):
         result = get_clean_gps_data(str(fake_bin))
 
-    assert list(result.columns) == ["Latitude", "Longitude"]
+    assert list(result.columns) == ["lat", "lon"]
     assert len(result) == 2
-    assert result["Latitude"].iloc[0] == pytest.approx(31.5)
-    assert result["Longitude"].iloc[1] == pytest.approx(35.1)
+    assert result["lat"].iloc[0] == pytest.approx(31.5)
+    assert result["lon"].iloc[1] == pytest.approx(35.1)

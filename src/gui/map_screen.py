@@ -1,4 +1,5 @@
 """Map view screen: renders the GPS track and manages background data loading."""
+
 import threading
 import time
 from typing import Callable
@@ -40,6 +41,7 @@ class MapScreen:
         )
 
     def build(self) -> ft.Control:
+        """Return the full map view with toolbar and footer."""
         return ft.Column(
             controls=[
                 self._build_toolbar(),
@@ -60,7 +62,11 @@ class MapScreen:
         return ft.Container(
             content=ft.Row(
                 controls=[
-                    ft.IconButton(ft.Icons.ARROW_BACK, tooltip="בחר קובץ אחר", on_click=lambda _: self.on_back()),
+                    ft.IconButton(
+                        ft.Icons.ARROW_BACK,
+                        tooltip="בחר קובץ אחר",
+                        on_click=lambda _: self.on_back(),
+                    ),
                     ft.VerticalDivider(),
                     ft.Text("GPS Track Viewer", size=18, weight=ft.FontWeight.BOLD),
                     ft.VerticalDivider(),
@@ -101,10 +107,7 @@ class MapScreen:
                 return
 
             after_load_time = time.perf_counter()
-            coords = [
-                fmap.MapLatitudeLongitude(lat, lon)
-                for lat, lon in zip(df["Latitude"], df["Longitude"])
-            ]
+            coords = [fmap.MapLatitudeLongitude(lat, lon) for lat, lon in zip(df["lat"], df["lon"])]
             after_coords_time = time.perf_counter()
             logger.debug(
                 "Timing — data load: %.3fs | build coords: %.3fs | total: %.3fs | points: %d",

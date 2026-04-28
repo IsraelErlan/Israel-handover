@@ -1,4 +1,5 @@
 """File picker landing screen."""
+
 from typing import Callable, cast
 
 import flet as ft
@@ -17,28 +18,32 @@ class FilePickerScreen:
         self.file_picker = ft.FilePicker()
 
     def build(self) -> ft.Control:
+        """Return the full-screen file-picker landing view."""
         return ft.Container(
             content=ft.Column(
-                controls=cast(list[ft.Control], [
-                    ft.Icon(ft.Icons.FLIGHT, size=64, color=ft.Colors.BLUE_GREY_400),
-                    ft.Text(
-                        "GPS Track Viewer",
-                        size=28,
-                        weight=ft.FontWeight.BOLD,
-                        text_align=ft.TextAlign.CENTER,
-                    ),
-                    ft.Text(
-                        "בחר קובץ MAVLink להצגת המסלול",
-                        size=14,
-                        color=ft.Colors.BLUE_GREY_600,
-                        text_align=ft.TextAlign.CENTER,
-                    ),
-                    ft.Button(
-                        "בחר קובץ .bin",
-                        icon=ft.Icons.FOLDER_OPEN,
-                        on_click=self._on_pick_click,
-                    ),
-                ]),
+                controls=cast(
+                    list[ft.Control],
+                    [
+                        ft.Icon(ft.Icons.FLIGHT, size=64, color=ft.Colors.BLUE_GREY_400),
+                        ft.Text(
+                            "GPS Track Viewer",
+                            size=28,
+                            weight=ft.FontWeight.BOLD,
+                            text_align=ft.TextAlign.CENTER,
+                        ),
+                        ft.Text(
+                            "בחר קובץ MAVLink להצגת המסלול",
+                            size=14,
+                            color=ft.Colors.BLUE_GREY_600,
+                            text_align=ft.TextAlign.CENTER,
+                        ),
+                        ft.Button(
+                            "בחר קובץ .bin",
+                            icon=ft.Icons.FOLDER_OPEN,
+                            on_click=self._on_pick_click,
+                        ),
+                    ],
+                ),
                 alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 spacing=16,

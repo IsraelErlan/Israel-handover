@@ -1,4 +1,5 @@
 """Application-wide constants for the GPS Track Viewer GUI."""
+
 import os
 
 import flet_map as fmap

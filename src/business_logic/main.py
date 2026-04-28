@@ -1,17 +1,18 @@
 """Public API for GPS data extraction from MAVLink binary logs."""
+
 import time
 
 import pandas as pd
 
-from .gps_processor import GpsProcessor
-from .mavlink_reader import MavlinkReader
 from utils.logger import get_logger
+
+from .mavlink_reader import MavlinkReader
 
 logger = get_logger(__name__)
 
 
 def get_clean_gps_data(file_path: str) -> pd.DataFrame:
-    """Read a MAVLink .bin log and return a DataFrame with Latitude and Longitude.
+    """Read a MAVLink .bin log and return a DataFrame with lat/lon columns.
 
     Filters for GPS messages where Instance (I) == 1, downsampled 1-in-10.
     """
@@ -22,9 +23,7 @@ def get_clean_gps_data(file_path: str) -> pd.DataFrame:
     raw_points = reader.get_raw_gps_data()
     after_read_time = time.perf_counter()
 
-    processor = GpsProcessor()
-    df = processor.to_dataframe(raw_points)
-    df = processor.format_for_display(df)
+    df = pd.DataFrame(raw_points)
     after_process_time = time.perf_counter()
 
     logger.debug(

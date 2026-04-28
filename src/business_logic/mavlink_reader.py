@@ -1,4 +1,5 @@
 """MAVLink binary log reader for extracting GPS data."""
+
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -22,7 +23,11 @@ class MavlinkReader:
         if not Path(self.file_path).exists():
             raise FileNotFoundError(f"Log file not found: {self.file_path}")
         logger.debug("Opening MAVLink connection: %s", self.file_path)
-        self.connection = mavutil.mavlink_connection(self.file_path)
+        try:
+            self.connection = mavutil.mavlink_connection(self.file_path)
+        except Exception:
+            logger.exception("Failed to open MAVLink connection: %s", self.file_path)
+            raise
 
     def get_raw_gps_data(self, every_nth: int = 10) -> List[Dict[str, Any]]:
         """Return a downsampled list of GPS dicts, keeping one in every *every_nth* messages."""
@@ -33,7 +38,9 @@ class MavlinkReader:
         last_valid = None
 
         try:
-            self.connect()
+            if not self.connection:
+                self.connect()
+            assert self.connection is not None
             while True:
                 gps_msg = self.connection.recv_match(type=["GPS"], blocking=False)
                 if gps_msg is None:

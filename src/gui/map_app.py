@@ -1,4 +1,5 @@
 """Flet application entry point for the GPS Track Viewer."""
+
 import os
 import sys
 
@@ -7,8 +8,9 @@ import flet as ft
 sys.path.insert(0, os.path.dirname(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from utils.constants import IS_DOCKER
 from navigator import Navigator
+
+from utils.constants import IS_DOCKER
 
 
 def main(page: ft.Page) -> None:
