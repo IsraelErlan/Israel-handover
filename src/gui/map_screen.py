@@ -1,6 +1,6 @@
 """Map view screen: renders the GPS track and manages background data loading."""
 
-import threading
+import asyncio
 import time
 from typing import Callable
 
@@ -53,10 +53,10 @@ class MapScreen:
         )
 
     def load(self, file_path: str) -> None:
-        """Start background GPS data loading for the given file."""
+        """Schedule background GPS data loading for the given file."""
         self.status_text.value = "Loading GPS data..."
         self.loading_ring.visible = True
-        threading.Thread(target=self._load_in_background, args=(file_path,), daemon=True).start()
+        self.page.run_task(self._load_in_background, file_path)
 
     def _build_toolbar(self) -> ft.Container:
         return ft.Container(
@@ -94,12 +94,12 @@ class MapScreen:
             bgcolor=ft.Colors.SURFACE_CONTAINER,
         )
 
-    def _load_in_background(self, file_path: str) -> None:
+    async def _load_in_background(self, file_path: str) -> None:
         try:
             logger.info("Background load started for: %s", file_path)
             start_time = time.perf_counter()
 
-            df = get_clean_gps_data(file_path)
+            df = await asyncio.to_thread(get_clean_gps_data, file_path)
 
             if df.empty:
                 logger.warning("No GPS points — aborting map update")
@@ -107,23 +107,28 @@ class MapScreen:
                 return
 
             after_load_time = time.perf_counter()
-            coords = [fmap.MapLatitudeLongitude(lat, lon) for lat, lon in zip(df["lat"], df["lon"])]
-            after_coords_time = time.perf_counter()
+            def process_data():
+                coords = [fmap.MapLatitudeLongitude(lat, lon) for lat, lon in zip(df["lat"], df["lon"])]
+                markers = self._build_markers(coords)
+                track = self._build_track(coords)
+                return coords, markers, track
+
+            coords, markers, track = await asyncio.to_thread(process_data)
+
+            self.marker_layer.markers = markers
+            self.polyline_layer.polylines = [track]
+            
+            await self.gps_map.move_to(destination=coords[0], zoom=TRACK_ZOOM)
+
+            after_render_time = time.perf_counter()
             logger.debug(
-                "Timing — data load: %.3fs | build coords: %.3fs | total: %.3fs | points: %d",
+                "Timing — load: %.3fs | build+move: %.3fs | total: %.3fs | points: %d",
                 after_load_time - start_time,
-                after_coords_time - after_load_time,
-                after_coords_time - start_time,
+                after_render_time - after_load_time,
+                after_render_time - start_time,
                 len(coords),
             )
 
-            self.marker_layer.markers = self._build_markers(coords)
-            self.polyline_layer.polylines = [self._build_track(coords)]
-
-            async def navigate() -> None:
-                await self.gps_map.move_to(destination=coords[0], zoom=TRACK_ZOOM)
-
-            self.page.run_task(navigate)
 
             self.point_counter.value = f"{len(coords)} points"
             self.status_text.value = "Track loaded successfully ✓"

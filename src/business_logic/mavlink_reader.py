@@ -20,11 +20,12 @@ class MavlinkReader:
 
     def connect(self) -> None:
         """Open the MAVLink connection to the log file."""
-        if not Path(self.file_path).exists():
-            raise FileNotFoundError(f"Log file not found: {self.file_path}")
-        logger.debug("Opening MAVLink connection: %s", self.file_path)
         try:
             self.connection = mavutil.mavlink_connection(self.file_path)
+            logger.debug("Opening MAVLink connection: %s", self.file_path)
+        
+        except FileNotFoundError:
+            logger.error("Log file not found: %s", self.file_path)
         except Exception:
             logger.exception("Failed to open MAVLink connection: %s", self.file_path)
             raise
@@ -40,7 +41,7 @@ class MavlinkReader:
         try:
             if not self.connection:
                 self.connect()
-            assert self.connection is not None
+
             while True:
                 gps_msg = self.connection.recv_match(type=["GPS"], blocking=False)
                 if gps_msg is None:
@@ -50,6 +51,18 @@ class MavlinkReader:
                     if count % every_nth == 0:
                         raw_data.append({"lat": gps_msg.Lat, "lon": gps_msg.Lng})
                     count += 1
+            # Always include the last point so the track ends correctly.
+            if last_valid is not None and (count - 1) % every_nth != 0:
+                raw_data.append({"lat": last_valid.Lat, "lon": last_valid.Lng})
+
+            logger.info(
+                "Read %d valid GPS messages, kept %d (every_nth=%d)",
+                count,
+                len(raw_data),
+                every_nth,
+            )
+            return raw_data        
+        
         except Exception:
             logger.exception("Error while reading GPS data from: %s", self.file_path)
             raise
@@ -59,14 +72,4 @@ class MavlinkReader:
                 self.connection = None
                 logger.debug("MAVLink connection closed: %s", self.file_path)
 
-        # Always include the last point so the track ends correctly.
-        if last_valid is not None and (count - 1) % every_nth != 0:
-            raw_data.append({"lat": last_valid.Lat, "lon": last_valid.Lng})
 
-        logger.info(
-            "Read %d valid GPS messages, kept %d (every_nth=%d)",
-            count,
-            len(raw_data),
-            every_nth,
-        )
-        return raw_data
