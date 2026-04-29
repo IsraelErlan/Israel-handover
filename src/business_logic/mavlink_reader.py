@@ -26,6 +26,7 @@ class MavlinkReader:
         
         except FileNotFoundError:
             logger.error("Log file not found: %s", self.file_path)
+            raise FileNotFoundError(f"Log file not found: {self.file_path}")
         except Exception:
             logger.exception("Failed to open MAVLink connection: %s", self.file_path)
             raise
